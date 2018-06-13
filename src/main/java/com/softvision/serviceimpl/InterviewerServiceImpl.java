@@ -27,20 +27,21 @@ public class InterviewerServiceImpl implements InterviewerService<Interviewer> {
     public Interviewer getInterviewer(String id) {
         LOGGER.info("InterviewerServiceImpl ID is : {} ", id);
         Optional<Interviewer> optInterviewer = interviewerRepository.findById(id);
-        if(optInterviewer.isPresent()){
+        if (optInterviewer.isPresent()) {
             return optInterviewer.get();
         }
         return null;
     }
+
     @Override
     public Interviewer addInterviewer(Interviewer interviewer) {
         return interviewerRepository.insert(interviewer);
     }
 
     @Override
-    public Interviewer updateInterviewer(Interviewer interviewer , String id) {
+    public Interviewer updateInterviewer(Interviewer interviewer, String id) {
         Optional<Interviewer> interviewerDAO = interviewerRepository.findById(id);
-        if(interviewerDAO.isPresent()){
+        if (interviewerDAO.isPresent()) {
             interviewer.setId(id);
             return interviewerRepository.save(interviewer);
         }
@@ -49,11 +50,21 @@ public class InterviewerServiceImpl implements InterviewerService<Interviewer> {
 
     @Override
     public void deleteInterviewer(String id) {
-        interviewerRepository.deleteById(id);
+        Optional<Interviewer> interviwerDAO = interviewerRepository.findById(id);
+        if (interviwerDAO.isPresent()) {
+            Interviewer optInterviwer = interviwerDAO.get();
+            optInterviwer.setDeleted(true);
+            interviewerRepository.save(optInterviwer);
+        }
     }
 
     @Override
     public void deleteAllInterviewers() {
-        interviewerRepository.deleteAll();
+        List<Interviewer> interviwerList = interviewerRepository.findAll();
+        interviwerList.forEach(interviewer ->
+                interviewer.setDeleted(true)
+        );
+
+        interviewerRepository.saveAll(interviwerList);
     }
 }

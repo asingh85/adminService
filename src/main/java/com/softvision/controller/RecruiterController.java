@@ -41,14 +41,13 @@ public class RecruiterController {
     @Produces(MediaType.APPLICATION_JSON)
     public void getRecruiterDetails(@Suspended AsyncResponse asyncResponse,
                                     @PathParam("id") String id) {
-        System.out.println("Eureka instances :" + discoveryClient.getInstances("recruiter"));
+        LOGGER.info("Eureka instances :{}", discoveryClient.getInstances("recruiter"));
         LOGGER.info("Recruiter ID is : {} ", id);
         CompletableFuture<Recruiter> future = CompletableFuture.supplyAsync(() -> recruiterService.getRecruiter(id));
         asyncResponse.resume(future.join());
     }
 
     @GET
-    @Path("/all")
     @Produces(MediaType.APPLICATION_JSON)
     public void getAllRecruitersDetails(@Suspended AsyncResponse asyncResponse,
                                         @QueryParam("size") Integer size,
@@ -57,6 +56,34 @@ public class RecruiterController {
         LOGGER.info("Number of elements request is {} and sort order is {} ", size, sortOrder);
         CompletableFuture<List<Recruiter>> future = CompletableFuture.supplyAsync(() -> recruiterService.getAll());
         List<Recruiter> recruitersList = future.join();
+
+
+        if (sortOrder.equals("desc")) {
+            asyncResponse.resume(recruitersList.stream().filter(p -> !p.isDeleted())
+                    .sorted(Comparator.reverseOrder())
+                    .limit(size)
+                    .collect(Collectors.toList()));
+        } else {
+            asyncResponse.resume(recruitersList.stream().filter(p -> !p.isDeleted())
+                    .sorted(Comparator.naturalOrder())
+                    .limit(size)
+                    .collect(Collectors.toList()));
+        }
+
+    }
+
+    @Path("/getAll")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getAllOnlyFalse(@Suspended AsyncResponse asyncResponse,
+                                @QueryParam("size") Integer size,
+                                @QueryParam("sort") String sortOrder) {
+
+        LOGGER.info("Number of elements request is {} and sort order is {} ", size, sortOrder);
+        CompletableFuture<List<Recruiter>> future =
+                CompletableFuture.supplyAsync(() -> recruiterService.getAllOnlyFalse());
+        List<Recruiter> recruitersList = future.join();
+
         if (sortOrder.equals("desc")) {
             asyncResponse.resume(recruitersList.stream()
                     .sorted(Comparator.reverseOrder())
@@ -69,9 +96,9 @@ public class RecruiterController {
                     .collect(Collectors.toList()));
         }
 
+
     }
 
-    @Path("/add")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -83,8 +110,9 @@ public class RecruiterController {
                 .thenApply(recruiter1 -> asyncResponse.resume(recruiter));
     }
 
-    @Path("/update/{id}")
+
     @PUT
+    @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public void updateRecruiter(@Suspended AsyncResponse asyncResponse,

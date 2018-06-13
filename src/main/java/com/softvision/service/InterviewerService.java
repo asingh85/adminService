@@ -3,7 +3,7 @@ package com.softvision.service;
 import com.softvision.model.Interviewer;
 import java.util.List;
 
-public interface InterviewerService <T extends Interviewer> {
+public interface InterviewerService<T extends Interviewer> {
 
     List<Interviewer> getAll();
 
@@ -11,7 +11,7 @@ public interface InterviewerService <T extends Interviewer> {
 
     T addInterviewer(T interviewer);
 
-    T updateInterviewer(T interviewer ,String id);
+    T updateInterviewer(T interviewer, String id);
 
     void deleteInterviewer(String id);
 

@@ -39,29 +39,28 @@ public class InterviewerController {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public void getInterviewerDetails(@Suspended AsyncResponse asyncResponse,
-                                    @PathParam("id") String id) {
+                                      @PathParam("id") String id) {
         LOGGER.info("Candidate ID is : {} ", id);
         CompletableFuture<Interviewer> future = CompletableFuture.supplyAsync(() -> interviewerService.getInterviewer(id));
         asyncResponse.resume(future.join());
     }
 
     @GET
-    @Path("/all")
     @Produces(MediaType.APPLICATION_JSON)
     public void getAllCandidateDetails(@Suspended AsyncResponse asyncResponse,
                                        @QueryParam("size") Integer size,
                                        @QueryParam("sort") String sortOrder) {
 
-        LOGGER.info("Number of elements request is {} and sort order is {} ", size,sortOrder );
+        LOGGER.info("Number of elements request is {} and sort order is {} ", size, sortOrder);
         CompletableFuture<List<Interviewer>> future = CompletableFuture.supplyAsync(() -> interviewerService.getAll());
         List<Interviewer> interviewersList = future.join();
-        if(sortOrder.equals("desc")) {
-            asyncResponse.resume(interviewersList.stream()
+        if (sortOrder.equals("desc")) {
+            asyncResponse.resume(interviewersList.stream().filter(p -> !p.isDeleted())
                     .sorted(Comparator.reverseOrder())
                     .limit(size)
                     .collect(Collectors.toList()));
         } else {
-            asyncResponse.resume(interviewersList.stream()
+            asyncResponse.resume(interviewersList.stream().filter(p -> !p.isDeleted())
                     .sorted(Comparator.naturalOrder())
                     .limit(size)
                     .collect(Collectors.toList()));
@@ -69,28 +68,27 @@ public class InterviewerController {
 
     }
 
-    @Path("/add")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public void addInterviewer(@Suspended AsyncResponse asyncResponse,
-                             Interviewer interviewer) {
+                               Interviewer interviewer) {
 
         ValidationUtil.validate(interviewer);
-        CompletableFuture.supplyAsync( () -> interviewerService.addInterviewer(interviewer))
+        CompletableFuture.supplyAsync(() -> interviewerService.addInterviewer(interviewer))
                 .thenApply(interviewer1 -> asyncResponse.resume(interviewer));
     }
 
 
-    @Path("/update/{id}")
     @PUT
+    @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public void updateInterviewer(@Suspended AsyncResponse asyncResponse,
-                               Interviewer interviewer , @PathParam("id") String id) {
+                                  Interviewer interviewer, @PathParam("id") String id) {
 
         ValidationUtil.validate(interviewer);
-        CompletableFuture.supplyAsync( () -> interviewerService.updateInterviewer(interviewer , id))
+        CompletableFuture.supplyAsync(() -> interviewerService.updateInterviewer(interviewer, id))
                 .thenApply(interviewer1 -> asyncResponse.resume(interviewer));
     }
 
@@ -98,18 +96,18 @@ public class InterviewerController {
     @DELETE
     @Path("/{id}")
     public void deleteInterviewer(@Suspended AsyncResponse asyncResponse,
-                                @PathParam("id") String id) {
+                                  @PathParam("id") String id) {
 
         LOGGER.info("Deleting candidate {} ", id);
-        CompletableFuture future  = CompletableFuture.runAsync(() -> interviewerService.deleteInterviewer(id));
+        CompletableFuture future = CompletableFuture.runAsync(() -> interviewerService.deleteInterviewer(id));
         asyncResponse.resume(future.join());
     }
 
     @DELETE
     @Path("/all")
     public void deleteAllInterviewer(@Suspended AsyncResponse asyncResponse) {
-        LOGGER.info(" Deleting All candidates " );
-        CompletableFuture future  = CompletableFuture.runAsync(() -> interviewerService.deleteAllInterviewers());
+        LOGGER.info(" Deleting All candidates ");
+        CompletableFuture future = CompletableFuture.runAsync(() -> interviewerService.deleteAllInterviewers());
         asyncResponse.resume(future.join());
     }
 }

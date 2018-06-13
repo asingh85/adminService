@@ -1,5 +1,7 @@
 package com.softvision.model;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import javax.persistence.GeneratedValue;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -32,18 +34,17 @@ public class Recruiter implements Comparable<Recruiter> {
     private String emailId;
 
     @Pattern(regexp = "(^$|[0-9]{10})", message = "Invalid Phone number")
-    public String contactNumber;
-    public boolean isDeleted;
+    private String contactNumber;
+    private boolean isDeleted;
+    private LocalDateTime createdDate;
+    private LocalDateTime modifiedDate;
+
 
     @Override
     public int compareTo(Recruiter o) {
-        int val = 0;
-        if (this.getFirstName().compareTo(o.getFirstName()) == -1) {
-            val = -1;
-        } else if (this.getFirstName().compareTo(o.getFirstName()) == 1) {
-            val = 1;
-        }
-        return val;
+        return Comparator.comparing(Recruiter::getFirstName)
+                .thenComparing(Recruiter::getLastName)
+                .compare(this, o);
     }
 
 
