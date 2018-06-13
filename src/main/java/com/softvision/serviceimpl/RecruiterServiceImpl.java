@@ -27,51 +27,51 @@ public class RecruiterServiceImpl implements RecruiterService<Recruiter> {
     RecruiterRepository recruiterRepository;
 
     @Override
-    public List<Recruiter> getAllOnlyFalse() {
+    public Optional<List<Recruiter>> getAllOnlyFalse() {
 
         Query query = new Query();
         query.addCriteria(Criteria.where("isDeleted").is(false));
 
-        return mongoTemplate.find(query, Recruiter.class);
+        return Optional.of(mongoTemplate.find(query, Recruiter.class));
     }
 
     @Override
-    public List<Recruiter> getAll() {
-        return recruiterRepository.findAll();
+    public Optional<List<Recruiter>> getAll() {
+        return Optional.of(recruiterRepository.findAll());
     }
 
     @Override
-    public Recruiter getRecruiter(String id) {
+    public Optional<Recruiter> getRecruiter(String id) {
 
         LOGGER.info("RecruiterServiceImpl ID is :{}", id);
         Optional<Recruiter> optRecruiter = recruiterRepository.findById(id);
         if (optRecruiter.isPresent()) {
-            return optRecruiter.get();
+            return Optional.of(optRecruiter.get());
 
         }
         return null;
     }
 
     @Override
-    public Recruiter addRecruiter(Recruiter recruiter) {
+    public Optional<Recruiter> addRecruiter(Recruiter recruiter) {
         if (recruiter != null) {
             LocalDateTime loc = LocalDateTime.now();
             recruiter.setCreatedDate(loc);
             recruiter.setModifiedDate(loc);
         }
 
-        return recruiterRepository.insert(recruiter);
+        return Optional.of(recruiterRepository.insert(recruiter));
     }
 
     @Override
-    public Recruiter updateRecruiter(Recruiter recruiter, String id) {
+    public Optional<Recruiter> updateRecruiter(Recruiter recruiter, String id) {
         LOGGER.info("RecruiterServiceImpl updateRecruiter()  ID is :{}", id);
         Optional<Recruiter> recruiterDAO = recruiterRepository.findById(id);
         if (recruiterDAO.isPresent()) {
             recruiter.setId(id);
             recruiter.setCreatedDate(recruiterDAO.get().getCreatedDate());
             recruiter.setModifiedDate(LocalDateTime.now());
-            return recruiterRepository.save(recruiter);
+            return Optional.of(recruiterRepository.save(recruiter));
         }
         LOGGER.info("RecruiterServiceImpl updateRecruiter()  Exit");
         return null;
