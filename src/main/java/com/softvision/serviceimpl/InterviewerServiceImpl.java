@@ -55,12 +55,21 @@ public class InterviewerServiceImpl implements InterviewerService<Interviewer> {
 
     @Override
     public void deleteInterviewer(String id) {
-        interviewerRepository.deleteById(id);
+        Optional<Interviewer> interviewerDAO = interviewerRepository.findById(id);
+        if (interviewerDAO.isPresent()) {
+            Interviewer optInterviwer = interviewerDAO.get();
+            optInterviwer.setDeleted(true);
+            optInterviwer.setModifiedDate(LocalDateTime.now());
+            interviewerRepository.save(optInterviwer);
+        }
     }
 
     @Override
     public void deleteAllInterviewers() {
-        interviewerRepository.deleteAll();
+
+        List<Interviewer> interviewerList = interviewerRepository.findAll();
+        interviewerList.forEach(interviewer -> interviewer.setDeleted(true));
+        interviewerRepository.saveAll(interviewerList);
     }
 
     @Override
@@ -69,7 +78,7 @@ public class InterviewerServiceImpl implements InterviewerService<Interviewer> {
         query.addCriteria(Criteria.where("technologyCommunity").is(technicalCommunity)
                 .andOperator(Criteria.where("bandExperience").gte(expInmonths)));
         List<Interviewer> interviewers = mongoTemplate.find(query, Interviewer.class);
-        LOGGER.info("Interviewers information {} :" ,interviewers);
+        LOGGER.info("Interviewers information {} :", interviewers);
         return Optional.of(interviewers);
     }
 }
